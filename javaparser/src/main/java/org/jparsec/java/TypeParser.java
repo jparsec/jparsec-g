@@ -1,6 +1,5 @@
 package org.jparsec.java;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.lang.reflect.ParameterizedType;
@@ -131,9 +130,6 @@ public final class TypeParser {
             .between(TERMS.token("<"), TERMS.token(">")),
         new Map2<Class<?>, List<Type>, ParameterizedType>() {
           @Override public ParameterizedType map(Class<?> raw, List<Type> params) {
-            checkArgument(raw.getTypeParameters().length == params.size(),
-                "%s expected %s type parameters, while %s are provied",
-                raw, raw.getTypeParameters().length, params);
             return Types.newParameterizedType(raw, params);
           }
         });

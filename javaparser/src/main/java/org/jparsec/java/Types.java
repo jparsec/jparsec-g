@@ -1,5 +1,7 @@
 package org.jparsec.java;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
@@ -61,6 +63,9 @@ public final class Types {
   /** Returns a parameterized type with {@code raw} and {@code typeArgs}. */
   public static ParameterizedType newParameterizedType(
       final Class<?> raw, List<? extends Type> typeArgs) {
+    checkArgument(raw.getTypeParameters().length == typeArgs.size(),
+        "%s expected %s type parameters, while %s are provied",
+        raw, raw.getTypeParameters().length, typeArgs);
     TypeResolver resolver = new TypeResolver();
     final List<TypeVariable<?>> vars = new ArrayList<TypeVariable<?>>();
     for (int i = 0; i < typeArgs.size(); i++) {
