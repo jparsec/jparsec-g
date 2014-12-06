@@ -72,63 +72,73 @@ public class TypeParserTest {
   }
 
   @Test
-  public void wildcardTypeWithNoBound() throws NoSuchFieldException {
+  public void wildcardTypeWithNoBound() {
     assertParser(new TypeToken<Iterable<?>>() {});
   }
 
   @Test
-  public void wildcardTypeWithUpperBound() throws NoSuchFieldException {
+  public void wildcardTypeWithUpperBound() {
     assertParser(new TypeToken<Iterable<? extends String>>() {});
   }
 
   @Test
-  public void wildcardTypeWithLowerBound() throws NoSuchFieldException {
+  public void wildcardTypeWithLowerBound() {
     assertParser(new TypeToken<Iterable<? super String>>() {});
   }
 
   @Test
-  public void parameterizedTypeWithOneType() throws NoSuchFieldException {
+  public void parameterizedTypeWithOneType() {
     assertParser(new TypeToken<Iterable<String>>() {});
   }
 
   @Test
-  public void parameterizedTypeWithTwoTypes() throws NoSuchFieldException {
+  public void parameterizedTypeWithTwoTypes() {
     assertParser(new TypeToken<Map<?, ? extends Number>>() {});
   }
 
   @Test(expected = ParserException.class)
-  public void primitiveTypeCannotBeUsedAsTypeParameter() throws NoSuchFieldException {
+  public void primitiveTypeCannotBeUsedAsTypeParameter() {
     new TypeParser().parse("Iterable<int>");
   }
 
   @Test(expected = ParserException.class)
-  public void insufficientTypeParameters() throws NoSuchFieldException {
+  public void insufficientTypeParameters() {
     new TypeParser().parse("java.util.Map<String>");
   }
 
   @Test(expected = ParserException.class)
-  public void tooManyTypeParameters() throws NoSuchFieldException {
+  public void tooManyTypeParameters() {
     new TypeParser().parse("java.util.List<String, ?>");
   }
 
   @Test(expected = ParserException.class)
-  public void invalidClassName() throws NoSuchFieldException {
+  public void invalidClassName() {
     new TypeParser().parse("no.such.class");
   }
 
   @Test(expected = ParserException.class)
-  public void emptyString() throws NoSuchFieldException {
+  public void cantParameterizeArray() {
+    new TypeParser().parse("int[]<String>");
+  }
+
+  @Test(expected = ParserException.class)
+  public void cantParametrizeAlreadyParameterized() {
+    new TypeParser().parse("Iterable<Integer><String>");
+  }
+
+  @Test(expected = ParserException.class)
+  public void cantParamterizeWithoutTypeParameter() {
+    new TypeParser().parse("Iterable<>");
+  }
+
+  @Test(expected = ParserException.class)
+  public void emptyString() {
     new TypeParser().parse("");
   }
 
   @Test(expected = NullPointerException.class)
-  public void nullString() throws NoSuchFieldException {
+  public void nullString() {
     new TypeParser().parse(null);
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void nullClassLoader() throws NoSuchFieldException {
-    new TypeParser(null);
   }
 
   private static void assertParser(TypeToken<?> type) {
