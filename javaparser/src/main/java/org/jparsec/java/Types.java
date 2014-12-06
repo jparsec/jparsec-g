@@ -31,7 +31,7 @@ public final class Types {
     final List<TypeVariable<?>> vars = new ArrayList<TypeVariable<?>>();
     int i= 0;
     for (Type bound : bounds) {
-      TypeVariable<?> var = TypeVariableGenerator.freshTypeVariable("B" + (++i));
+      TypeVariable<?> var = TypeVariableGenerator.freshTypeVariable("B" + (i++));
       vars.add(var);
       resolver = resolver.where(var, bound);
     }
