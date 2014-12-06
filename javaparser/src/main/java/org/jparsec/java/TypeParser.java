@@ -133,11 +133,7 @@ public final class TypeParser {
             checkArgument(raw.getTypeParameters().length == params.size(),
                 "%s expected %s type parameters, while %s are provied",
                 raw, raw.getTypeParameters().length, params);
-            List<Type> typeArgs = new ArrayList<Type>();
-            for (int i = 0; i < params.size(); i++) {
-              typeArgs.add(params.get(i));
-            }
-            return Types.newParameterizedType(raw, typeArgs);
+            return Types.newParameterizedType(raw, params);
           }
         });
   }
