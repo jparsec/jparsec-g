@@ -1,6 +1,7 @@
 package org.jparsec.java;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -70,6 +71,7 @@ public final class TypeParser {
 
   /** Create a type parser with {@code classloader} used to load classes. */
   public TypeParser(final ClassLoader classloader) {
+    checkNotNull(classloader);
     this.classParser = Terminals.fragment(Tag.IDENTIFIER).map(
         new Map<String, Class<?>>() {
           @Override public Class<?> map(String name) {

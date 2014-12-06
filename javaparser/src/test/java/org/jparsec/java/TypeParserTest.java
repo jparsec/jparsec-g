@@ -111,6 +111,26 @@ public class TypeParserTest {
     new TypeParser().parse("java.util.List<String, ?>");
   }
 
+  @Test(expected = ParserException.class)
+  public void invalidClassName() throws NoSuchFieldException {
+    new TypeParser().parse("no.such.class");
+  }
+
+  @Test(expected = ParserException.class)
+  public void emptyString() throws NoSuchFieldException {
+    new TypeParser().parse("");
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void nullString() throws NoSuchFieldException {
+    new TypeParser().parse(null);
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void nullClassLoader() throws NoSuchFieldException {
+    new TypeParser(null);
+  }
+
   private static void assertParser(TypeToken<?> type) {
     assertEquals(type, new TypeParser().parse(type.toString()));
   }
