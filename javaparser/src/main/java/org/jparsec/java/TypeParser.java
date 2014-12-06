@@ -30,13 +30,13 @@ import com.google.common.reflect.TypeToken;
 public final class TypeParser {
 
   private static final CharPredicate JAVA_IDENTIFIER_START = new CharPredicate() {
-    public boolean isChar(char c) {
+    @Override public boolean isChar(char c) {
       return Character.isJavaIdentifierStart(c);
     }
   };
 
   private static final CharPredicate JAVA_IDENTIFIER_PART = new CharPredicate() {
-    public boolean isChar(char c) {
+    @Override public boolean isChar(char c) {
       return Character.isJavaIdentifierPart(c);
     }
   };
