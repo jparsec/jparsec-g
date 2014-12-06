@@ -3,8 +3,10 @@ jparsec-g
 
 Use jparsec to parse Guava TypeToken.
 
-new TypeParser().parse(serialized_string) and you get a TypeToken deserializer.
+To deserialize TypeToken:
 
-It can also be used to flexibly and reflectively construct TypeToken's:
+    new TypeParser().parse(serialized_string)
+
+To flexibly and reflectively construct TypeToken:
 
     TypeToken<?> genericType = parser.parse(theClass.getCanonicalName() + "<?, String>");
