@@ -12,7 +12,6 @@ import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
 import org.codehaus.jparsec.Scanners;
 import org.codehaus.jparsec.Terminals;
-import org.codehaus.jparsec.Tokens.Tag;
 import org.codehaus.jparsec.functors.Map;
 import org.codehaus.jparsec.functors.Map2;
 import org.codehaus.jparsec.pattern.CharPredicate;
@@ -72,7 +71,7 @@ public final class TypeParser {
   /** Create a type parser with {@code classloader} used to load classes. */
   public TypeParser(final ClassLoader classloader) {
     checkNotNull(classloader);
-    this.classParser = Terminals.fragment(Tag.IDENTIFIER).map(
+    this.classParser = Terminals.Identifier.PARSER.map(
         new Map<String, Class<?>>() {
           @Override public Class<?> map(String name) {
             if (name.indexOf('.') < 0) {
