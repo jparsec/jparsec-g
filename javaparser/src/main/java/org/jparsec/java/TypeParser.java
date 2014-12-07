@@ -37,6 +37,7 @@ public final class TypeParser {
 
   private static final CharPredicate JAVA_IDENTIFIER_PART = new CharPredicate() {
     @Override public boolean isChar(char c) {
+      // ";" is for internal array class names such as [Ljava.lang.String;
       return c == ';' || Character.isJavaIdentifierPart(c);
     }
   };
@@ -69,15 +70,15 @@ public final class TypeParser {
 
   private final ClassLoader classloader;
   private final Parser<Class<?>> rawTypeParser = FQN.map(new Map<String, Class<?>>() {
-        @Override public Class<?> map(String name) {
-          Class<?> primitiveType = PRIMITIVE_TYPES.get(name);
-          if (primitiveType != null) return primitiveType;
-          if (name.indexOf('.') < 0) {
-            name = "java.lang." + name;
-          }
-          return loadClass(name);
-        }
-      });
+    @Override public Class<?> map(String name) {
+      Class<?> primitiveType = PRIMITIVE_TYPES.get(name);
+      if (primitiveType != null) return primitiveType;
+      if (name.indexOf('.') < 0) {
+        name = "java.lang." + name;
+      }
+      return loadClass(name);
+    }
+  });
 
   public TypeParser() {
     this(TypeParser.class.getClassLoader());
@@ -110,6 +111,12 @@ public final class TypeParser {
         });
   }
 
+  /**
+   * Parser from internal array class names such as {@code [Z}, {@code [[[java.lang.String;} etc.
+   *
+   * <p>.java files can only use {@code int[]} format, not the internal format. But we have to
+   * be able to parse from internal format because {@link Type#toString} can produce it.
+   */
   private Parser<Class<?>> arrayClass() {
     Parser<Class<?>> componentType = FQN.next(
         new Map<String, Parser<? extends Class<?>>>() {
