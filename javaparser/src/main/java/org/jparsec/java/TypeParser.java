@@ -49,21 +49,13 @@ public final class TypeParser {
           .followedBy(Scanners.isChar(';').optional())
           .source(),
       new String[] {"<", ">", "&", ",", "[", "]", "?", "@"},
-      new String[] {
-          "extends", "super",
-          "void", "boolean", "byte", "short", "int", "long", "float", "double"});
+      new String[] {"extends", "super"});
 
-  private static final Parser<Class<?>> PRIMITIVE_TYPE = Parsers.or(
-      TERMS.token("void").retn(void.class),
-      TERMS.token("boolean").retn(boolean.class),
-      TERMS.token("byte").retn(byte.class),
-      TERMS.token("short").retn(short.class),
-      TERMS.token("int").retn(int.class),
-      TERMS.token("long").retn(long.class),
-      TERMS.token("float").retn(float.class),
-      TERMS.token("double").retn(double.class));
+  private static final ImmutableMap<String, Class<?>> PRIMITIVE_TYPES = mapByName(
+      void.class, boolean.class, byte.class, short.class, int.class, long.class,
+      float.class, double.class);
 
-  private static ImmutableMap<String, Class<?>> INTERNAL_PRIMITIVE_ARRAY_CLASSES = mapByName(
+  private static ImmutableMap<String, Class<?>> PRIMITIVE_ARRAY_CLASSES = mapByName(
       boolean[].class, byte[].class, short[].class, int[].class,
       long[].class, float[].class, double[].class);
 
@@ -71,6 +63,8 @@ public final class TypeParser {
   private final Parser<Class<?>> rawTypeParser = Terminals.Identifier.PARSER.map(
       new Map<String, Class<?>>() {
         @Override public Class<?> map(String name) {
+          Class<?> primitiveType = PRIMITIVE_TYPES.get(name);
+          if (primitiveType != null) return primitiveType;
           if (name.indexOf('.') < 0) {
             name = "java.lang." + name;
           }
@@ -90,8 +84,8 @@ public final class TypeParser {
   /** Parses {@code string} to a {@link TypeToken}. */
   public TypeToken<?> parse(String string) {
     Parser.Reference<Type> ref = Parser.newReference();
-    Parser<Class<?>> classParser = Parsers.or(PRIMITIVE_TYPE, internalArrayClass(), rawTypeParser);
-    ref.set(couldBeCanonicalArray(Parsers.or(parameterizedType(ref.lazy()), classParser)));
+    ref.set(couldBeCanonicalArray(
+        Parsers.or(parameterizedType(ref.lazy()), arrayClass(), rawTypeParser)));
     return TypeToken.of(
         ref.get().from(TERMS.tokenizer(), Scanners.WHITESPACES.optional()).parse(string));
   }
@@ -109,11 +103,11 @@ public final class TypeParser {
         });
   }
 
-  private Parser<Class<?>> internalArrayClass() {
+  private Parser<Class<?>> arrayClass() {
     Parser<Class<?>> componentType = Terminals.Identifier.PARSER.next(
         new Map<String, Parser<? extends Class<?>>>() {
           @Override public Parser<? extends Class<?>> map(String name) {
-            Class<?> primitiveArray = INTERNAL_PRIMITIVE_ARRAY_CLASSES.get("[" + name);
+            Class<?> primitiveArray = PRIMITIVE_ARRAY_CLASSES.get("[" + name);
             if (primitiveArray != null) return Parsers.constant(primitiveArray);
             if (name.startsWith("L") && name.endsWith(";")) {
               String className = name.substring(1, name.length() - 1);
