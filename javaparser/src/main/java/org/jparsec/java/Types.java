@@ -65,7 +65,6 @@ public final class Types {
     TypeResolver resolver = new TypeResolver();
     final List<TypeVariable<?>> vars = new ArrayList<TypeVariable<?>>();
     for (Type arg : typeArgs) {
-      // TODO: perform proper type inference and type checking.
       TypeVariable<?> var = TypeVariableGenerator.freshTypeVariable("T" + vars.size());
       vars.add(var);
       resolver = resolver.where(var, arg);
