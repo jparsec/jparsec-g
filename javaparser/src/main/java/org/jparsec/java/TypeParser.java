@@ -112,7 +112,7 @@ public final class TypeParser {
   }
 
   /**
-   * Parser from internal array class names such as {@code [Z}, {@code [[[java.lang.String;} etc.
+   * Parser from internal array class names such as {@code [Z}, {@code [[[Ljava.lang.String;} etc.
    *
    * <p>.java files can only use {@code int[]} format, not the internal format. But we have to
    * be able to parse from internal format because {@link Type#toString} can produce it.
