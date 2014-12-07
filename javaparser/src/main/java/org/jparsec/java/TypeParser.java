@@ -15,6 +15,7 @@ import org.codehaus.jparsec.functors.Map2;
 import org.codehaus.jparsec.pattern.CharPredicate;
 import org.codehaus.jparsec.pattern.Patterns;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
 
@@ -36,7 +37,7 @@ public final class TypeParser {
 
   private static final CharPredicate JAVA_IDENTIFIER_PART = new CharPredicate() {
     @Override public boolean isChar(char c) {
-      return Character.isJavaIdentifierPart(c);
+      return c == ';' || Character.isJavaIdentifierPart(c);
     }
   };
 
@@ -45,11 +46,17 @@ public final class TypeParser {
       "identifier");
 
   private static final Terminals TERMS = Terminals.caseSensitive(
-      SINGLE_IDENTIFIER.sepBy(Scanners.isChar('.'))
-          .followedBy(Scanners.isChar(';').optional())
-          .source(),
-      new String[] {"<", ">", "&", ",", "[", "]", "?", "@"},
+      SINGLE_IDENTIFIER.source(),
+      new String[] {"<", ">", "&", ",", "[", "]", "?", "@", "."},
       new String[] {"extends", "super"});
+
+  private static final Parser<String> FQN = Terminals.Identifier.PARSER
+      .sepBy1(TERMS.token("."))
+      .map(new Map<List<String>, String>() {
+        @Override public String map(List<String> parts) {
+          return Joiner.on('.').join(parts);
+        }
+      });
 
   private static final ImmutableMap<String, Class<?>> PRIMITIVE_TYPES = mapByName(
       void.class, boolean.class, byte.class, short.class, int.class, long.class,
@@ -60,8 +67,7 @@ public final class TypeParser {
       long[].class, float[].class, double[].class);
 
   private final ClassLoader classloader;
-  private final Parser<Class<?>> rawTypeParser = Terminals.Identifier.PARSER.map(
-      new Map<String, Class<?>>() {
+  private final Parser<Class<?>> rawTypeParser = FQN.map(new Map<String, Class<?>>() {
         @Override public Class<?> map(String name) {
           Class<?> primitiveType = PRIMITIVE_TYPES.get(name);
           if (primitiveType != null) return primitiveType;
@@ -104,7 +110,7 @@ public final class TypeParser {
   }
 
   private Parser<Class<?>> arrayClass() {
-    Parser<Class<?>> componentType = Terminals.Identifier.PARSER.next(
+    Parser<Class<?>> componentType = FQN.next(
         new Map<String, Parser<? extends Class<?>>>() {
           @Override public Parser<? extends Class<?>> map(String name) {
             Class<?> primitiveArray = PRIMITIVE_ARRAY_CLASSES.get("[" + name);
