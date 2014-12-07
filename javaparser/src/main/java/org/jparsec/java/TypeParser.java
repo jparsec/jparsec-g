@@ -15,6 +15,8 @@ import org.codehaus.jparsec.functors.Map2;
 import org.codehaus.jparsec.pattern.CharPredicate;
 import org.codehaus.jparsec.pattern.Patterns;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
 
 /**
@@ -44,7 +46,9 @@ public final class TypeParser {
       "identifier");
 
   private static final Terminals TERMS = Terminals.caseSensitive(
-      SINGLE_IDENTIFIER.sepBy(Scanners.isChar('.')).source(),
+      SINGLE_IDENTIFIER.sepBy(Scanners.isChar('.'))
+          .followedBy(Scanners.isChar(';').optional())
+          .source(),
       new String[] {"<", ">", "&", ",", "[", "]", "?", "@"},
       new String[] {
           "extends", "super",
@@ -60,41 +64,41 @@ public final class TypeParser {
       TERMS.token("float").retn(float.class),
       TERMS.token("double").retn(double.class));
 
-  private final Parser<Class<?>> classParser;
+  private static ImmutableMap<String, Class<?>> INTERNAL_PRIMITIVE_ARRAY_CLASSES =
+      getInternalPrimitiveArrayClasses();
+
+  private final ClassLoader classloader;
+  private final Parser<Class<?>> rawTypeParser = Terminals.Identifier.PARSER.map(
+      new Map<String, Class<?>>() {
+        @Override public Class<?> map(String name) {
+          if (name.indexOf('.') < 0) {
+            name = "java.lang." + name;
+          }
+          return loadClass(name);
+        }
+      });
 
   public TypeParser() {
     this(TypeParser.class.getClassLoader());
   }
 
   /** Create a type parser with {@code classloader} used to load classes. */
-  public TypeParser(final ClassLoader classloader) {
-    checkNotNull(classloader);
-    this.classParser = Terminals.Identifier.PARSER.map(new Map<String, Class<?>>() {
-      @Override public Class<?> map(String name) {
-        if (name.indexOf('.') < 0) {
-          name = "java.lang." + name;
-        }
-        try {
-          return Class.forName(name, false, classloader);
-        } catch (ClassNotFoundException e) {
-          throw new RuntimeException(e);
-        }
-      }
-    });
+  public TypeParser(ClassLoader classloader) {
+    this.classloader = checkNotNull(classloader);
   }
 
   /** Parses {@code string} to a {@link TypeToken}. */
   public TypeToken<?> parse(String string) {
     Parser.Reference<Type> ref = Parser.newReference();
-    ref.set(couldBeArrayType(
-        Parsers.or(PRIMITIVE_TYPE, parameterizedType(ref.lazy()), classParser)));
+    Parser<Class<?>> classParser = Parsers.or(PRIMITIVE_TYPE, internalArrayClass(), rawTypeParser);
+    ref.set(couldBeCanonicalArray(Parsers.or(parameterizedType(ref.lazy()), classParser)));
     return TypeToken.of(
         ref.get().from(TERMS.tokenizer(), Scanners.WHITESPACES.optional()).parse(string));
   }
 
   private Parser<ParameterizedType> parameterizedType(Parser<Type> typeArg) {
     return Parsers.sequence(
-        classParser,
+        rawTypeParser,
         typeParameter(typeArg)
             .sepBy(TERMS.token(","))
             .between(TERMS.token("<"), TERMS.token(">")),
@@ -105,7 +109,37 @@ public final class TypeParser {
         });
   }
 
-  private static Parser<Type> couldBeArrayType(Parser<Type> typeParser) {
+  private Parser<Class<?>> internalArrayClass() {
+    Parser<Class<?>> componentType = Terminals.Identifier.PARSER.next(
+        new Map<String, Parser<? extends Class<?>>>() {
+          @Override public Parser<? extends Class<?>> map(String name) {
+            Class<?> primitiveArray = INTERNAL_PRIMITIVE_ARRAY_CLASSES.get("[" + name);
+            if (primitiveArray != null) return Parsers.constant(primitiveArray);
+            if (name.startsWith("L") && name.endsWith(";")) {
+              String className = name.substring(1, name.length() - 1);
+              return Parsers.constant(Types.newArrayType(loadClass(className)));
+            } else {
+              return Parsers.expect("array class internal name");
+            }
+          }
+        });
+    return TERMS.token("[")
+        .next(componentType.prefix(TERMS.token("[").retn(new Map<Class<?>, Class<?>>() {
+          @Override public Class<?> map(Class<?> type) {
+            return Types.newArrayType(type);
+          }
+        })));
+  }
+
+  private Class<?> loadClass(String name) {
+    try {
+      return Class.forName(name, false, classloader);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static Parser<Type> couldBeCanonicalArray(Parser<Type> typeParser) {
     return typeParser.postfix(TERMS.phrase("[", "]").retn(new Map<Type, Type>() {
       @Override public Type map(Type componentType) {
         return Types.newArrayType(componentType);
@@ -127,5 +161,20 @@ public final class TypeParser {
         }),
         TERMS.token("?").retn(Types.subtypeOf(Object.class)),
         typeParser);
+  }
+
+  private static ImmutableMap<String, Class<?>> getInternalPrimitiveArrayClasses() {
+    ImmutableMap.Builder<String, Class<?>> builder = ImmutableMap.builder();
+    for (Class<?> arrayClass : ImmutableList.of(
+        boolean[].class,
+        byte[].class,
+        short[].class,
+        int[].class,
+        long[].class,
+        float[].class,
+        double[].class)) {
+      builder.put(arrayClass.getName(), arrayClass);
+    }
+    return builder.build();
   }
 }

@@ -47,14 +47,24 @@ public class TypeParserTest {
     assertEquals(boolean[].class, new TypeParser().parse("boolean [ ]").getType());
     assertEquals(int[].class, new TypeParser().parse(int[].class.getCanonicalName()).getType());
     assertEquals(int[][].class, new TypeParser().parse(int[][].class.getCanonicalName()).getType());
+    assertParser(boolean[].class);
+    assertParser(boolean[][].class);
+    assertParser(byte[].class);
+    assertParser(short[].class);
+    assertParser(int[].class);
+    assertParser(long[].class);
+    assertParser(float[].class);
+    assertParser(double[].class);
+    assertParser(String[].class);
+    assertParser(List[][][].class);
   }
 
   @Test
   public void genericArrayType() {
     assertParser(new TypeToken<Iterable<String>[]>() {});
     assertParser(new TypeToken<List<Iterable<String>[]>>() {});
-    assertEquals(new TypeToken<List<Iterable<int[]>[]>>() {},
-        new TypeParser().parse("java.util.List<Iterable<int[ ]>[]>"));
+    assertParser(new TypeToken<List<Iterable<int[]>[]>>() {});
+    assertParser(new TypeToken<List<Iterable<int[][]>[][]>>() {});
   }
 
   @Test
@@ -129,7 +139,27 @@ public class TypeParserTest {
   }
 
   @Test(expected = ParserException.class)
-  public void cantParametrizeAlreadyParameterized() {
+  public void cantParameterizeInternalArrayClass() {
+    new TypeParser().parse("[I<String>");
+  }
+
+  @Test(expected = ParserException.class)
+  public void internalClassMissingSemicolon() {
+    new TypeParser().parse("[Ljava.lang.Object");
+  }
+
+  @Test(expected = ParserException.class)
+  public void internalClassMissingL() {
+    new TypeParser().parse("[java.lang.Object;");
+  }
+
+  @Test(expected = ParserException.class)
+  public void internalClassWithSuperfluousSemicolons() {
+    new TypeParser().parse("[Ljava.lang.Object;;");
+  }
+
+  @Test(expected = ParserException.class)
+  public void cantParameterizeAlreadyParameterized() {
     new TypeParser().parse("Iterable<Integer><String>");
   }
 
@@ -150,6 +180,10 @@ public class TypeParserTest {
 
   private static void assertParser(TypeToken<?> type) {
     assertEquals(type, new TypeParser().parse(type.toString()));
+  }
+
+  private static void assertParser(Class<?> type) {
+    assertEquals(type, new TypeParser().parse(type.getName()).getType());
   }
 
   private interface Bounded<T extends Number> {}

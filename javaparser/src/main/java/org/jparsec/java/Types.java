@@ -85,7 +85,7 @@ public final class Types {
   /** Returns a new array type with {@code componentType}. */
   public static Type newArrayType(Type componentType) {
     if (componentType instanceof Class<?>) {
-      return Array.newInstance((Class<?>) componentType, 0).getClass();
+      return newArrayType((Class<?>) componentType);
     }
     final TypeVariable<?> var = TypeVariableGenerator.freshTypeVariable("E");
     return new TypeResolver().where(var, componentType).resolveType(new GenericArrayType() {
@@ -93,6 +93,11 @@ public final class Types {
         return var;
       }
     });
+  }
+
+  /** Returns a new array class with {@code componentType}. */
+  public static Class<?> newArrayType(Class<?> componentType) {
+    return Array.newInstance(componentType, 0).getClass();
   }
 
   private static final class TypeVariableGenerator<T> {
