@@ -89,10 +89,24 @@ public final class TypeParser {
     Parser.Reference<Type> ref = Parser.newReference();
     ref.set(couldBeArrayType(Parsers.or(
         PRIMITIVE_TYPE,
-        parameterizedType(classParser, ref.lazy()),
+        parameterizedType(ref.lazy()),
         classParser)));
     return TypeToken.of(
         ref.get().from(TERMS.tokenizer(), Scanners.WHITESPACES.optional()).parse(string));
+  }
+
+  private Parser<ParameterizedType> parameterizedType(
+      Parser<Type> typeArg) {
+    return Parsers.sequence(
+        classParser,
+        typeParameter(typeArg)
+            .sepBy(TERMS.token(","))
+            .between(TERMS.token("<"), TERMS.token(">")),
+        new Map2<Class<?>, List<Type>, ParameterizedType>() {
+          @Override public ParameterizedType map(Class<?> raw, List<Type> params) {
+            return Types.newParameterizedType(raw, params);
+          }
+        });
   }
 
   private static Parser<Type> couldBeArrayType(Parser<Type> typeParser) {
@@ -117,19 +131,5 @@ public final class TypeParser {
         }),
         TERMS.token("?").retn(Types.subtypeOf(Object.class)),
         typeParser);
-  }
-
-  private static Parser<ParameterizedType> parameterizedType(
-      Parser<Class<?>> classParser, Parser<Type> typeArg) {
-    return Parsers.sequence(
-        classParser,
-        typeParameter(typeArg)
-            .sepBy(TERMS.token(","))
-            .between(TERMS.token("<"), TERMS.token(">")),
-        new Map2<Class<?>, List<Type>, ParameterizedType>() {
-          @Override public ParameterizedType map(Class<?> raw, List<Type> params) {
-            return Types.newParameterizedType(raw, params);
-          }
-        });
   }
 }
