@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.jparsec.Parser;
@@ -51,7 +50,7 @@ public final class TypeParser {
           "extends", "super",
           "void", "boolean", "byte", "short", "int", "long", "float", "double"});
 
-  private static final Parser<Class<?>> PRIMITIVE_TYPE_PARSER = Parsers.or(
+  private static final Parser<Class<?>> PRIMITIVE_TYPE = Parsers.or(
       TERMS.token("void").retn(void.class),
       TERMS.token("boolean").retn(boolean.class),
       TERMS.token("byte").retn(byte.class),
@@ -85,19 +84,18 @@ public final class TypeParser {
         });
   }
 
-  /** Parses {@code str} to a {@link TypeToken}. */
-  public TypeToken<?> parse(String str) {
+  /** Parses {@code string} to a {@link TypeToken}. */
+  public TypeToken<?> parse(String string) {
     Parser.Reference<Type> ref = Parser.newReference();
-    Parser<Type> componentTypeParser = Parsers.or(
-        PRIMITIVE_TYPE_PARSER,
-        parameterizedTypeParser(classParser, ref.lazy()),
-        classParser);
-    ref.set(arrayTypeParser(componentTypeParser));
+    ref.set(couldBeArrayType(Parsers.or(
+        PRIMITIVE_TYPE,
+        parameterizedType(classParser, ref.lazy()),
+        classParser)));
     return TypeToken.of(
-        ref.get().from(TERMS.tokenizer(), Scanners.WHITESPACES.optional()).parse(str));
+        ref.get().from(TERMS.tokenizer(), Scanners.WHITESPACES.optional()).parse(string));
   }
 
-  private static Parser<Type> arrayTypeParser(Parser<Type> typeParser) {
+  private static Parser<Type> couldBeArrayType(Parser<Type> typeParser) {
     return typeParser.postfix(TERMS.phrase("[", "]").retn(new Map<Type, Type>() {
       @Override public Type map(Type componentType) {
         return Types.newArrayType(componentType);
@@ -105,7 +103,7 @@ public final class TypeParser {
     }));
   }
 
-  private static Parser<Type> typeParameterParser(Parser<Type> typeParser) {
+  private static Parser<Type> typeParameter(Parser<Type> typeParser) {
     return Parsers.or(
         TERMS.phrase("?", "extends").next(typeParser).map(new Map<Type, Type>() {
           @Override public Type map(Type bound) {
@@ -121,11 +119,11 @@ public final class TypeParser {
         typeParser);
   }
 
-  private static Parser<ParameterizedType> parameterizedTypeParser(
-      Parser<Class<?>> classParser, Parser<Type> typeArgParser) {
+  private static Parser<ParameterizedType> parameterizedType(
+      Parser<Class<?>> classParser, Parser<Type> typeArg) {
     return Parsers.sequence(
         classParser,
-        typeParameterParser(typeArgParser)
+        typeParameter(typeArg)
             .sepBy(TERMS.token(","))
             .between(TERMS.token("<"), TERMS.token(">")),
         new Map2<Class<?>, List<Type>, ParameterizedType>() {

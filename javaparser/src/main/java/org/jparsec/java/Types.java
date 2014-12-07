@@ -102,7 +102,7 @@ public final class Types {
 
   private static final class TypeVariableGenerator<T> {
     private static final TypeVariable<?> PROTOTYPE =
-        (TypeVariable<?>) TypeVariableGenerator.class.getTypeParameters()[0];
+        TypeVariableGenerator.class.getTypeParameters()[0];
 
     /** Makes a fresh type variable that's only equal to itself. */
     @SuppressWarnings("unchecked")  // Delegates to the <T> of class Var except getName().
