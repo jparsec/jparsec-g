@@ -95,8 +95,7 @@ public final class TypeParser {
         ref.get().from(TERMS.tokenizer(), Scanners.WHITESPACES.optional()).parse(string));
   }
 
-  private Parser<ParameterizedType> parameterizedType(
-      Parser<Type> typeArg) {
+  private Parser<ParameterizedType> parameterizedType(Parser<Type> typeArg) {
     return Parsers.sequence(
         classParser,
         typeParameter(typeArg)
