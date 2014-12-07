@@ -151,28 +151,28 @@ public final class TypeParser {
     }
   }
 
-  private static Parser<Type> couldBeCanonicalArray(Parser<Type> typeParser) {
-    return typeParser.postfix(TERMS.phrase("[", "]").retn(new Map<Type, Type>() {
+  private static Parser<Type> couldBeCanonicalArray(Parser<Type> anyType) {
+    return anyType.postfix(TERMS.phrase("[", "]").retn(new Map<Type, Type>() {
       @Override public Type map(Type componentType) {
         return Types.newArrayType(componentType);
       }
     }));
   }
 
-  private static Parser<Type> typeParameter(Parser<Type> typeParser) {
+  private static Parser<Type> typeParameter(Parser<Type> anyType) {
     return Parsers.or(
-        TERMS.phrase("?", "extends").next(typeParser).map(new Map<Type, Type>() {
+        TERMS.phrase("?", "extends").next(anyType).map(new Map<Type, Type>() {
           @Override public Type map(Type bound) {
             return Types.subtypeOf(bound);
           }
         }),
-        TERMS.phrase("?", "super").next(typeParser).map(new Map<Type, Type>() {
+        TERMS.phrase("?", "super").next(anyType).map(new Map<Type, Type>() {
           @Override public Type map(Type bound) {
             return Types.supertypeOf(bound);
           }
         }),
         TERMS.token("?").retn(Types.subtypeOf(Object.class)),
-        typeParser);
+        anyType);
   }
 
   private static ImmutableMap<String, Class<?>> mapByName(Class<?>... classes) {
