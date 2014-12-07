@@ -9,15 +9,17 @@
 
   <description>Use jparsec to parse a string into Guava TypeToken.</description>
 
-  <url>http://github.com/fluentfuture/jparsec-g</url>
+  <url>http://github.com/jparsec/jparsec-g</url>
 
   <distributionManagement>
     <repository>
-      <id>sonatype</id>
+      <id>onatype-nexus-staging</id>
+	  <name>Sonatype Nexus release repository</name>
       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
     <snapshotRepository>
-      <id>sonatype</id>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus snapshot repository</name>
       <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
     </snapshotRepository>
   </distributionManagement>
@@ -30,9 +32,9 @@
   </licenses>
 
   <scm>
-    <url>http://github.com/fluentfuture/jparsec-g</url>
-    <connection>scm:git:git@github.com:fluentfuture/jparsec-g.git</connection>
-    <developerConnection>scm:git:git@github.com:fluentfuture/jparsec-g.git</developerConnection>
+    <url>http://github.com/jparsec/jparsec-g</url>
+    <connection>scm:git:git@github.com:jparsec/jparsec-g.git</connection>
+    <developerConnection>scm:git:git@github.com:jparsec/jparsec-g.git</developerConnection>
   </scm>
 
   <developers>
@@ -184,7 +186,10 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.1</version>
+            <version>2.2.2</version>
+            <configuration>
+				<arguments>-Dgpg.passphrase=${gpg.passphrase}</arguments>
+			</configuration>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
