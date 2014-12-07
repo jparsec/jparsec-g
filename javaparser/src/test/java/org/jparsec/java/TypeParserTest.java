@@ -44,6 +44,7 @@ public class TypeParserTest {
   @Test
   public void primitiveArrayType() {
     assertEquals(int[].class, new TypeParser().parse("int[]").getType());
+    assertEquals(boolean[].class, new TypeParser().parse("boolean [ ]").getType());
     assertEquals(int[].class, new TypeParser().parse(int[].class.getCanonicalName()).getType());
     assertEquals(int[][].class, new TypeParser().parse(int[][].class.getCanonicalName()).getType());
   }
@@ -99,6 +100,11 @@ public class TypeParserTest {
   @Test(expected = ParserException.class)
   public void primitiveTypeCannotBeUsedAsTypeParameter() {
     new TypeParser().parse("Iterable<int>");
+  }
+
+  @Test(expected = ParserException.class)
+  public void voidArrayDisallowed() {
+    new TypeParser().parse("void[]");
   }
 
   @Test(expected = ParserException.class)
