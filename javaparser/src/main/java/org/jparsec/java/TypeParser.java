@@ -86,10 +86,8 @@ public final class TypeParser {
   /** Parses {@code string} to a {@link TypeToken}. */
   public TypeToken<?> parse(String string) {
     Parser.Reference<Type> ref = Parser.newReference();
-    ref.set(couldBeArrayType(Parsers.or(
-        PRIMITIVE_TYPE,
-        parameterizedType(ref.lazy()),
-        classParser)));
+    ref.set(couldBeArrayType(
+        Parsers.or(PRIMITIVE_TYPE, parameterizedType(ref.lazy()), classParser)));
     return TypeToken.of(
         ref.get().from(TERMS.tokenizer(), Scanners.WHITESPACES.optional()).parse(string));
   }
