@@ -11,6 +11,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.google.common.reflect.AbstractInvocationHandler;
@@ -20,26 +21,20 @@ import com.google.common.reflect.TypeResolver;
 /**
  * Utility class to construct {@link Type} instances reflectively.
  *
- * <p>The crude implementations in this class don't bother implementing {@link Object#equals} and
- * {@link Object#hashCode} because it's tricky to get them right (especially to return hash
- * code consistent with JDK). As a work-around, we use Guava's {@link TypeResolver} to transform the
- * non-conformant type implementations to be standard-conformant, before returning them.
+ * <p>The crude {@code Type} implementations in this class don't bother implementing
+ * {@link Object#equals} and {@link Object#hashCode} because it's tricky to get them right
+ * (especially to return hash code consistent with JDK). As a work-around, we use Guava's
+ * {@link TypeResolver} to transform the non-conformant type implementations to be
+ * standard-conformant, before returning.
  */
 public final class Types {
 
-  /** Returns a wildcard type that's subtype of {@code bounds}. */
-  public static WildcardType subtypeOf(Type... bounds) {
-    TypeResolver resolver = new TypeResolver();
-    final List<TypeVariable<?>> vars = new ArrayList<TypeVariable<?>>();
-    int i= 0;
-    for (Type bound : bounds) {
-      TypeVariable<?> var = TypeVariableGenerator.freshTypeVariable("B" + (i++));
-      vars.add(var);
-      resolver = resolver.where(var, bound);
-    }
-    return (WildcardType) resolver.resolveType(new WildcardType() {
+  /** Returns a wildcard type that's subtype of {@code bound}. */
+  public static WildcardType subtypeOf(Type bound) {
+    final TypeVariable<?> var = TypeVariableGenerator.freshTypeVariable("B");
+    return (WildcardType) new TypeResolver().where(var, bound).resolveType(new WildcardType() {
       @Override public Type[] getUpperBounds() {
-        return vars.toArray(new Type[0]);
+        return new Type[] {var};
       }
       @Override public Type[] getLowerBounds() {
         return new Type[0];
@@ -51,28 +46,29 @@ public final class Types {
   public static WildcardType supertypeOf(Type bound) {
     final TypeVariable<?> var = TypeVariableGenerator.freshTypeVariable("SUB");
     return (WildcardType) new TypeResolver().where(var, bound).resolveType(new WildcardType() {
-      @Override public Type[] getLowerBounds() {
-        return new Type[] {var};
-      }
       @Override public Type[] getUpperBounds() {
         return new Type[] {Object.class};
+      }
+      @Override public Type[] getLowerBounds() {
+        return new Type[] {var};
       }
     });
   }
 
   /** Returns a parameterized type with {@code raw} and {@code typeArgs}. */
+  // TODO: infer types and check that 'raw' can be parameterized by 'typeArgs'.
   public static ParameterizedType newParameterizedType(
-      final Class<?> raw, List<? extends Type> typeArgs) {
+      final Class<?> raw, Collection<? extends Type> typeArgs) {
     checkArgument(raw.getTypeParameters().length == typeArgs.size(),
         "%s expected %s type parameters, while %s are provied",
         raw, raw.getTypeParameters().length, typeArgs);
     TypeResolver resolver = new TypeResolver();
     final List<TypeVariable<?>> vars = new ArrayList<TypeVariable<?>>();
-    for (int i = 0; i < typeArgs.size(); i++) {
+    for (Type arg : typeArgs) {
       // TODO: perform proper type inference and type checking.
-      TypeVariable<?> var = TypeVariableGenerator.freshTypeVariable("T" + i);
+      TypeVariable<?> var = TypeVariableGenerator.freshTypeVariable("T" + vars.size());
       vars.add(var);
-      resolver = resolver.where(var, typeArgs.get(i));
+      resolver = resolver.where(var, arg);
     }
     return (ParameterizedType) resolver.resolveType(new ParameterizedType() {
       @Override public Class<?> getRawType() {
