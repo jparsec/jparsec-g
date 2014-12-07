@@ -69,16 +69,6 @@ public final class TypeParser {
       long[].class, float[].class, double[].class);
 
   private final ClassLoader classloader;
-  private final Parser<Class<?>> rawTypeParser = FQN.map(new Map<String, Class<?>>() {
-    @Override public Class<?> map(String name) {
-      Class<?> primitiveType = PRIMITIVE_TYPES.get(name);
-      if (primitiveType != null) return primitiveType;
-      if (name.indexOf('.') < 0) {
-        name = "java.lang." + name;
-      }
-      return loadClass(name);
-    }
-  });
 
   public TypeParser() {
     this(TypeParser.class.getClassLoader());
@@ -93,14 +83,27 @@ public final class TypeParser {
   public TypeToken<?> parse(String string) {
     Parser.Reference<Type> ref = Parser.newReference();
     ref.set(couldBeCanonicalArray(
-        Parsers.or(parameterizedType(ref.lazy()), arrayClass(), rawTypeParser)));
+        Parsers.or(parameterizedType(ref.lazy()), arrayClass(), rawType())));
     return TypeToken.of(
         ref.get().from(TERMS.tokenizer(), Scanners.WHITESPACES.optional()).parse(string));
   }
 
+  private Parser<Class<?>> rawType() {
+    return FQN.map(new Map<String, Class<?>>() {
+      @Override public Class<?> map(String name) {
+        Class<?> primitiveType = PRIMITIVE_TYPES.get(name);
+        if (primitiveType != null) return primitiveType;
+        if (name.indexOf('.') < 0) {
+          name = "java.lang." + name;
+        }
+        return loadClass(name);
+      }
+    });
+  }
+
   private Parser<ParameterizedType> parameterizedType(Parser<Type> typeArg) {
     return Parsers.sequence(
-        rawTypeParser,
+        rawType(),
         typeParameter(typeArg)
             .sepBy(TERMS.token(","))
             .between(TERMS.token("<"), TERMS.token(">")),
