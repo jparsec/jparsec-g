@@ -53,8 +53,9 @@ public final class TypeParser {
   private static final Parser<String> FQN = Terminals.Identifier.PARSER
       .sepBy1(TERMS.token("."))
       .map(new Map<List<String>, String>() {
+        final Joiner joiner = Joiner.on('.');
         @Override public String map(List<String> parts) {
-          return Joiner.on('.').join(parts);
+          return joiner.join(parts);
         }
       });
 
