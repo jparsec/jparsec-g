@@ -115,7 +115,7 @@ public final class TypeParser {
   }
 
   /**
-   * Parser from internal array class names such as {@code [Z}, {@code [[[Ljava.lang.String;} etc.
+   * Parser for internal array class names such as {@code [Z}, {@code [[[Ljava.lang.String;} etc.
    *
    * <p>.java files can only use {@code int[]} format, not the internal format. But we have to
    * be able to parse from internal format because {@link Type#toString} can produce it.
@@ -124,6 +124,7 @@ public final class TypeParser {
     Parser<Class<?>> componentType = FQN.next(
         new Map<String, Parser<? extends Class<?>>>() {
           @Override public Parser<? extends Class<?>> map(String name) {
+            // Only invoked when we already see a "[" at the beginning.
             Class<?> primitiveArray = PRIMITIVE_ARRAY_CLASSES.get("[" + name);
             if (primitiveArray != null) return Parsers.constant(primitiveArray);
             if (name.startsWith("L") && name.endsWith(";")) {
@@ -134,7 +135,7 @@ public final class TypeParser {
             }
           }
         });
-    return TERMS.token("[")
+    return TERMS.token("[") // must be an array internal format from this point on.
         .next(componentType.prefix(TERMS.token("[").retn(new Map<Class<?>, Class<?>>() {
           @Override public Class<?> map(Class<?> type) {
             return Types.newArrayType(type);
