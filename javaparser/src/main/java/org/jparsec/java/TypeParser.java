@@ -69,19 +69,18 @@ public final class TypeParser {
   /** Create a type parser with {@code classloader} used to load classes. */
   public TypeParser(final ClassLoader classloader) {
     checkNotNull(classloader);
-    this.classParser = Terminals.Identifier.PARSER.map(
-        new Map<String, Class<?>>() {
-          @Override public Class<?> map(String name) {
-            if (name.indexOf('.') < 0) {
-              name = "java.lang." + name;
-            }
-            try {
-              return Class.forName(name, false, classloader);
-            } catch (ClassNotFoundException e) {
-              throw new RuntimeException(e);
-            }
-          }
-        });
+    this.classParser = Terminals.Identifier.PARSER.map(new Map<String, Class<?>>() {
+      @Override public Class<?> map(String name) {
+        if (name.indexOf('.') < 0) {
+          name = "java.lang." + name;
+        }
+        try {
+          return Class.forName(name, false, classloader);
+        } catch (ClassNotFoundException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    });
   }
 
   /** Parses {@code string} to a {@link TypeToken}. */
