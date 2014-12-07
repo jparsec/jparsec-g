@@ -38,6 +38,8 @@ public final class TypeParser {
   private static final CharPredicate JAVA_IDENTIFIER_PART = new CharPredicate() {
     @Override public boolean isChar(char c) {
       // ";" is for internal array class names such as [Ljava.lang.String;
+      // Since ';' is not used in any other grammar, we just treat it as part of identifier.
+      // Class.forName() can reject incorrectly placed ';' anyway.
       return c == ';' || Character.isJavaIdentifierPart(c);
     }
   };
@@ -121,20 +123,19 @@ public final class TypeParser {
    * be able to parse from internal format because {@link Type#toString} can produce it.
    */
   private Parser<Class<?>> arrayClass() {
-    Parser<Class<?>> componentType = FQN.next(
-        new Map<String, Parser<? extends Class<?>>>() {
-          @Override public Parser<? extends Class<?>> map(String name) {
-            // Only invoked when we already see a "[" at the beginning.
-            Class<?> primitiveArray = PRIMITIVE_ARRAY_CLASSES.get("[" + name);
-            if (primitiveArray != null) return Parsers.constant(primitiveArray);
-            if (name.startsWith("L") && name.endsWith(";")) {
-              String className = name.substring(1, name.length() - 1);
-              return Parsers.constant(Types.newArrayType(loadClass(className)));
-            } else {
-              return Parsers.expect("array class internal name");
-            }
-          }
-        });
+    Parser<Class<?>> componentType = FQN.next(new Map<String, Parser<? extends Class<?>>>() {
+      @Override public Parser<? extends Class<?>> map(String name) {
+        // Only invoked when we already see a "[" at the beginning.
+        Class<?> primitiveArray = PRIMITIVE_ARRAY_CLASSES.get("[" + name);
+        if (primitiveArray != null) return Parsers.constant(primitiveArray);
+        if (name.startsWith("L") && name.endsWith(";")) {
+          String className = name.substring(1, name.length() - 1);
+          return Parsers.constant(Types.newArrayType(loadClass(className)));
+        } else {
+          return Parsers.expect("array class internal name");
+        }
+      }
+    });
     return TERMS.token("[") // must be an array internal format from this point on.
         .next(componentType.prefix(TERMS.token("[").retn(new Map<Class<?>, Class<?>>() {
           @Override public Class<?> map(Class<?> type) {
