@@ -15,7 +15,6 @@ import org.codehaus.jparsec.functors.Map2;
 import org.codehaus.jparsec.pattern.CharPredicate;
 import org.codehaus.jparsec.pattern.Patterns;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
 
@@ -64,8 +63,9 @@ public final class TypeParser {
       TERMS.token("float").retn(float.class),
       TERMS.token("double").retn(double.class));
 
-  private static ImmutableMap<String, Class<?>> INTERNAL_PRIMITIVE_ARRAY_CLASSES =
-      getInternalPrimitiveArrayClasses();
+  private static ImmutableMap<String, Class<?>> INTERNAL_PRIMITIVE_ARRAY_CLASSES = mapByName(
+      boolean[].class, byte[].class, short[].class, int[].class,
+      long[].class, float[].class, double[].class);
 
   private final ClassLoader classloader;
   private final Parser<Class<?>> rawTypeParser = Terminals.Identifier.PARSER.map(
@@ -163,17 +163,10 @@ public final class TypeParser {
         typeParser);
   }
 
-  private static ImmutableMap<String, Class<?>> getInternalPrimitiveArrayClasses() {
+  private static ImmutableMap<String, Class<?>> mapByName(Class<?>... classes) {
     ImmutableMap.Builder<String, Class<?>> builder = ImmutableMap.builder();
-    for (Class<?> arrayClass : ImmutableList.of(
-        boolean[].class,
-        byte[].class,
-        short[].class,
-        int[].class,
-        long[].class,
-        float[].class,
-        double[].class)) {
-      builder.put(arrayClass.getName(), arrayClass);
+    for (Class<?> cls : classes) {
+      builder.put(cls.getName(), cls);
     }
     return builder.build();
   }
