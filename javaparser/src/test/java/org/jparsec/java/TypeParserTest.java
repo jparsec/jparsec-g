@@ -53,7 +53,8 @@ public class TypeParserTest {
   public void genericArrayType() {
     assertParser(new TypeToken<Iterable<String>[]>() {});
     assertParser(new TypeToken<List<Iterable<String>[]>>() {});
-    assertParser(new TypeToken<List<Iterable<int[]>[]>>() {});
+    assertEquals(new TypeToken<List<Iterable<int[]>[]>>() {},
+        new TypeParser().parse("java.util.List<Iterable<int[ ]>[]>"));
   }
 
   @Test
