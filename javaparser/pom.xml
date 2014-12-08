@@ -3,7 +3,7 @@
   <parent>
       <groupId>com.github.jparsec</groupId>
       <artifactId>jparsec-g-root</artifactId>
-      <version>1.0</version>
+      <version>1.1-SNAPSHOT</version>
       <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>jparsec-g</artifactId>
