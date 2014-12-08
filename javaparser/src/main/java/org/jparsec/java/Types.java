@@ -20,13 +20,12 @@ import com.google.common.reflect.TypeResolver;
 
 /**
  * Utility class to construct {@link Type} instances reflectively.
- *
- * <p>The crude {@code Type} implementations in this class don't bother implementing
- * {@link Object#equals} and {@link Object#hashCode} because it's tricky to get them right
- * (especially to return hash code consistent with JDK). As a work-around, we use Guava's
- * {@link TypeResolver} to transform the non-conformant type implementations to be
- * standard-conformant, before returning.
  */
+// The crude {@code Type} implementations in this class don't bother implementing
+// equals/hashCode because it's tricky to get them right
+// (especially to return hash code consistent with JDK). As a work-around, we use Guava's
+// TypeResolver to transform the non-conformant type implementations to be
+// standard-conformant, before returning.
 public final class Types {
 
   /** Returns a wildcard type that's subtype of {@code bound}. */
