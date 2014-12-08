@@ -44,12 +44,12 @@ public final class TypeParser {
     }
   };
 
-  private static final Parser<?> SINGLE_IDENTIFIER = Scanners.pattern(
+  private static final Parser<?> WORD = Scanners.pattern(
       Patterns.isChar(JAVA_IDENTIFIER_START).next(Patterns.isChar(JAVA_IDENTIFIER_PART).many()),
       "identifier");
 
   private static final Terminals TERMS = Terminals.caseSensitive(
-      SINGLE_IDENTIFIER.source(),
+      WORD.source(),
       new String[] {"<", ">", "&", ",", "[", "]", "?", "@", "."},
       new String[] {"extends", "super"});
 
@@ -66,7 +66,7 @@ public final class TypeParser {
       void.class, boolean.class, byte.class, short.class, int.class, long.class,
       float.class, double.class);
 
-  private static ImmutableMap<String, Class<?>> PRIMITIVE_ARRAY_CLASSES = mapByName(
+  private static ImmutableMap<String, Class<?>> PRIMITIVE_ARRAY_TYPES = mapByName(
       boolean[].class, byte[].class, short[].class, int[].class,
       long[].class, float[].class, double[].class);
 
@@ -126,7 +126,7 @@ public final class TypeParser {
     Parser<Class<?>> componentType = FQN.next(new Map<String, Parser<? extends Class<?>>>() {
       @Override public Parser<? extends Class<?>> map(String name) {
         // Only invoked when we already see a "[" at the beginning.
-        Class<?> primitiveArray = PRIMITIVE_ARRAY_CLASSES.get("[" + name);
+        Class<?> primitiveArray = PRIMITIVE_ARRAY_TYPES.get("[" + name);
         if (primitiveArray != null) return Parsers.constant(primitiveArray);
         if (name.startsWith("L") && name.endsWith(";")) {
           String className = name.substring(1, name.length() - 1);
