@@ -3,7 +3,7 @@
   <groupId>com.github.jparsec</groupId>
   <artifactId>jparsec-g-root</artifactId>
   <packaging>pom</packaging>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
 
   <name>java-parser-root</name>
 
@@ -35,6 +35,7 @@
     <url>http://github.com/jparsec/jparsec-g</url>
     <connection>scm:git:git@github.com:jparsec/jparsec-g.git</connection>
     <developerConnection>scm:git:git@github.com:jparsec/jparsec-g.git</developerConnection>
+    <tag>jparsec-g-root-1.0</tag>
   </scm>
 
   <developers>
