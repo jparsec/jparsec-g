@@ -10,3 +10,5 @@ To deserialize TypeToken:
 To flexibly and reflectively construct TypeToken:
 
     TypeToken<?> genericType = parser.parse(theClass.getCanonicalName() + "<?, String>");
+
+[Javadoc](http://jparsec.github.io/jparsec-g/apidocs/)
