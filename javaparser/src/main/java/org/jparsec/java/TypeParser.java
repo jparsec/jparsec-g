@@ -30,9 +30,7 @@ import com.google.common.reflect.TypeToken;
 public final class TypeParser {
 
   private static final CharPredicate JAVA_IDENTIFIER_START = new CharPredicate() {
-    @Override public boolean isChar(char c) {
-      return Character.isJavaIdentifierStart(c);
-    }
+    @Override public boolean isChar(char c) { return Character.isJavaIdentifierStart(c); }
   };
 
   private static final CharPredicate JAVA_IDENTIFIER_PART = new CharPredicate() {
@@ -57,9 +55,7 @@ public final class TypeParser {
       .sepBy1(TERMS.token("."))
       .map(new Map<List<String>, String>() {
         final Joiner joiner = Joiner.on('.');
-        @Override public String map(List<String> parts) {
-          return joiner.join(parts);
-        }
+        @Override public String map(List<String> parts) { return joiner.join(parts); }
       });
 
   private static final ImmutableMap<String, Class<?>> PRIMITIVE_TYPES = mapByName(
@@ -138,9 +134,7 @@ public final class TypeParser {
     });
     return TERMS.token("[") // must be an array internal format from this point on.
         .next(componentType.prefix(TERMS.token("[").retn(new Map<Class<?>, Class<?>>() {
-          @Override public Class<?> map(Class<?> type) {
-            return Types.newArrayType(type);
-          }
+          @Override public Class<?> map(Class<?> type) { return Types.newArrayType(type); }
         })));
   }
 
@@ -154,23 +148,17 @@ public final class TypeParser {
 
   private static Parser<Type> couldBeCanonicalArray(Parser<Type> anyType) {
     return anyType.postfix(TERMS.phrase("[", "]").retn(new Map<Type, Type>() {
-      @Override public Type map(Type componentType) {
-        return Types.newArrayType(componentType);
-      }
+      @Override public Type map(Type componentType) { return Types.newArrayType(componentType); }
     }));
   }
 
   private static Parser<Type> typeParameter(Parser<Type> anyType) {
     return Parsers.or(
         TERMS.phrase("?", "extends").next(anyType).map(new Map<Type, Type>() {
-          @Override public Type map(Type bound) {
-            return Types.subtypeOf(bound);
-          }
+          @Override public Type map(Type bound) { return Types.subtypeOf(bound); }
         }),
         TERMS.phrase("?", "super").next(anyType).map(new Map<Type, Type>() {
-          @Override public Type map(Type bound) {
-            return Types.supertypeOf(bound);
-          }
+          @Override public Type map(Type bound) { return Types.supertypeOf(bound); }
         }),
         TERMS.token("?").retn(Types.subtypeOf(Object.class)),
         anyType);

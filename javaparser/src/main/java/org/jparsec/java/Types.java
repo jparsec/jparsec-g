@@ -33,12 +33,8 @@ public final class Types {
   public static WildcardType subtypeOf(Type bound) {
     final TypeVariable<?> var = TypeVariableGenerator.freshTypeVariable("B");
     return (WildcardType) new TypeResolver().where(var, bound).resolveType(new WildcardType() {
-      @Override public Type[] getUpperBounds() {
-        return new Type[] {var};
-      }
-      @Override public Type[] getLowerBounds() {
-        return new Type[0];
-      }
+      @Override public Type[] getUpperBounds() { return new Type[] {var}; }
+      @Override public Type[] getLowerBounds() { return new Type[0]; }
     });
   }
 
@@ -46,12 +42,8 @@ public final class Types {
   public static WildcardType supertypeOf(Type bound) {
     final TypeVariable<?> var = TypeVariableGenerator.freshTypeVariable("SUB");
     return (WildcardType) new TypeResolver().where(var, bound).resolveType(new WildcardType() {
-      @Override public Type[] getUpperBounds() {
-        return new Type[] {Object.class};
-      }
-      @Override public Type[] getLowerBounds() {
-        return new Type[] {var};
-      }
+      @Override public Type[] getUpperBounds() { return new Type[] {Object.class}; }
+      @Override public Type[] getLowerBounds() { return new Type[] {var}; }
     });
   }
 
@@ -70,15 +62,9 @@ public final class Types {
       resolver = resolver.where(var, arg);
     }
     return (ParameterizedType) resolver.resolveType(new ParameterizedType() {
-      @Override public Class<?> getRawType() {
-        return raw;
-      }
-      @Override public Type getOwnerType() {
-        return null;
-      }
-      @Override public Type[] getActualTypeArguments() {
-        return vars.toArray(new Type[0]);
-      }
+      @Override public Class<?> getRawType() { return raw; }
+      @Override public Type getOwnerType() { return null; }
+      @Override public Type[] getActualTypeArguments() { return vars.toArray(new Type[0]); }
     });
   }
 
@@ -89,9 +75,7 @@ public final class Types {
     }
     final TypeVariable<?> var = TypeVariableGenerator.freshTypeVariable("E");
     return new TypeResolver().where(var, componentType).resolveType(new GenericArrayType() {
-      @Override public Type getGenericComponentType() {
-        return var;
-      }
+      @Override public Type getGenericComponentType() { return var; }
     });
   }
 
@@ -121,9 +105,7 @@ public final class Types {
             throw e.getCause();
           }
         }
-        @Override public String toString() {
-          return name;
-        }
+        @Override public String toString() { return name; }
       });
     }
   }
