@@ -94,10 +94,7 @@ public final class TypeParser {
       @Override public Class<?> map(String name) {
         Class<?> primitiveType = PRIMITIVE_TYPES.get(name);
         if (primitiveType != null) return primitiveType;
-        if (name.indexOf('.') < 0) {
-          name = "java.lang." + name;
-        }
-        return loadClass(name);
+        return loadClass(name.indexOf('.') < 0 ? "java.lang." + name : name);
       }
     });
   }
