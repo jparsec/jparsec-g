@@ -120,7 +120,7 @@ public final class TypeParser {
    * be able to parse from internal format because {@link Type#toString} can produce it.
    */
   private Parser<Class<?>> arrayClass() {
-    Parser<Class<?>> componentType = FQN.next(new Map<String, Parser<? extends Class<?>>>() {
+    Parser<Class<?>> arrayType = FQN.next(new Map<String, Parser<? extends Class<?>>>() {
       @Override public Parser<? extends Class<?>> map(String name) {
         // Only invoked when we already see a "[" at the beginning.
         Class<?> primitiveArray = PRIMITIVE_ARRAY_TYPES.get("[" + name);
@@ -134,8 +134,10 @@ public final class TypeParser {
       }
     });
     return TERMS.token("[") // must be an array internal format from this point on.
-        .next(componentType.prefix(TERMS.token("[").retn(new Map<Class<?>, Class<?>>() {
-          @Override public Class<?> map(Class<?> type) { return Types.newArrayType(type); }
+        .next(arrayType.prefix(TERMS.token("[").retn(new Map<Class<?>, Class<?>>() {
+          @Override public Class<?> map(Class<?> componentType) {
+            return Types.newArrayType(componentType);
+          }
         })));
   }
 
