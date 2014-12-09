@@ -11,7 +11,6 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import com.google.common.reflect.AbstractInvocationHandler;
@@ -49,10 +48,7 @@ public final class Types {
   /** Returns a parameterized type with {@code raw} and {@code typeArgs}. */
   // TODO: infer types and check that 'raw' can be parameterized by 'typeArgs'.
   public static ParameterizedType newParameterizedType(
-      final Class<?> raw, Collection<? extends Type> typeArgs) {
-    checkArgument(raw.getTypeParameters().length == typeArgs.size(),
-        "%s expected %s type parameters, while %s are provied",
-        raw, raw.getTypeParameters().length, typeArgs);
+      final Class<?> raw, Iterable<? extends Type> typeArgs) {
     TypeResolver resolver = new TypeResolver();
     final List<TypeVariable<?>> vars = new ArrayList<TypeVariable<?>>();
     for (Type arg : typeArgs) {
@@ -60,6 +56,9 @@ public final class Types {
       vars.add(var);
       resolver = resolver.where(var, arg);
     }
+    checkArgument(raw.getTypeParameters().length == vars.size(),
+        "%s expected %s type parameters, while %s are provied",
+        raw, raw.getTypeParameters().length, typeArgs);
     return (ParameterizedType) resolver.resolveType(new ParameterizedType() {
       @Override public Class<?> getRawType() { return raw; }
       @Override public Type getOwnerType() { return null; }
