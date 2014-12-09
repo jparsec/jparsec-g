@@ -1,14 +1,14 @@
 jparsec-g
 =========
 
-Use jparsec to parse Guava TypeToken.
+Parse Guava TypeToken.
 
 To deserialize TypeToken:
 
-    new TypeParser().parse(serialized_string)
+    new TypeParser().parse(typeToken.toString())
 
-To flexibly and reflectively construct TypeToken:
+To construct TypeToken reflectively:
 
-    TypeToken<?> genericType = parser.parse(theClass.getCanonicalName() + "<?, String>");
+    TypeToken<?> genericType = parser.parse(theClass.getName() + "<?, String>");
 
 [Javadoc](http://jparsec.github.io/jparsec-g/apidocs/)
