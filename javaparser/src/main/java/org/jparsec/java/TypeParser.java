@@ -82,7 +82,9 @@ public final class TypeParser {
     Parser.Reference<Type> ref = Parser.newReference();
     Parser<Type> type = Parsers.or(
         wildcardType(ref.lazy()), parameterizedType(ref.lazy()), arrayClass(), rawType());
-    ref.set(couldBeCanonicalArray(type));
+    ref.set(type.postfix(TERMS.phrase("[", "]").retn(new Map<Type, Type>() {
+      @Override public Type map(Type componentType) { return Types.newArrayType(componentType); }
+    })));
     return TypeToken.of(
         ref.get().from(TERMS.tokenizer(), Scanners.WHITESPACES.optional()).parse(string));
   }
@@ -143,12 +145,6 @@ public final class TypeParser {
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private static Parser<Type> couldBeCanonicalArray(Parser<Type> anyType) {
-    return anyType.postfix(TERMS.phrase("[", "]").retn(new Map<Type, Type>() {
-      @Override public Type map(Type componentType) { return Types.newArrayType(componentType); }
-    }));
   }
 
   private static Parser<Type> wildcardType(Parser<Type> boundType) {
