@@ -85,17 +85,17 @@ public class TypeParserTest {
   }
 
   @Test
-  public void wildcardTypeWithNoBound() {
+  public void parameterizedWithWildcardTypeWithNoBound() {
     assertParser(new TypeToken<Iterable<?>>() {});
   }
 
   @Test
-  public void wildcardTypeWithUpperBound() {
+  public void parameterizedWithWildcardTypeWithUpperBound() {
     assertParser(new TypeToken<Iterable<? extends String>>() {});
   }
 
   @Test
-  public void wildcardTypeWithLowerBound() {
+  public void parameterizedWithWildcardTypeWithLowerBound() {
     assertParser(new TypeToken<Iterable<? super String>>() {});
   }
 
@@ -107,6 +107,30 @@ public class TypeParserTest {
   @Test
   public void parameterizedTypeWithTwoTypes() {
     assertParser(new TypeToken<Map<?, ? extends Number>>() {});
+  }
+
+  @Test
+  public void testWildcardTypeWithUpperBounds() {
+    assertEquals(Types.subtypeOf(Number.class),
+        new TypeParser().parse("? extends Number").getType());
+  }
+
+  @Test
+  public void testWildcardTypeWithLowerBounds() {
+    assertEquals(Types.supertypeOf(Number.class),
+        new TypeParser().parse("? super Number").getType());
+  }
+
+  @Test
+  public void testWildcardTypeWithNoBounds() {
+    assertEquals(Types.subtypeOf(Object.class),
+        new TypeParser().parse("?").getType());
+  }
+
+  @Test
+  public void testWildcardArray() {
+    assertEquals(Types.newArrayType(Types.subtypeOf(Object.class)),
+        new TypeParser().parse("?[]").getType());
   }
 
   @Test(expected = ParserException.class)

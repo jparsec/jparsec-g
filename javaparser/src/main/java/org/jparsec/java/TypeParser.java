@@ -80,8 +80,9 @@ public final class TypeParser {
   /** Parses {@code string} to a {@link TypeToken}. */
   public TypeToken<?> parse(String string) {
     Parser.Reference<Type> ref = Parser.newReference();
-    ref.set(couldBeCanonicalArray(
-        Parsers.or(parameterizedType(ref.lazy()), arrayClass(), rawType())));
+    Parser<Type> type = Parsers.or(
+        wildcardType(ref.lazy()), parameterizedType(ref.lazy()), arrayClass(), rawType());
+    ref.set(couldBeCanonicalArray(type));
     return TypeToken.of(
         ref.get().from(TERMS.tokenizer(), Scanners.WHITESPACES.optional()).parse(string));
   }
@@ -102,9 +103,7 @@ public final class TypeParser {
   private Parser<ParameterizedType> parameterizedType(Parser<Type> typeArg) {
     return Parsers.sequence(
         rawType(),
-        typeParameter(typeArg)
-            .sepBy(TERMS.token(","))
-            .between(TERMS.token("<"), TERMS.token(">")),
+        Parsers.between(TERMS.token("<"), typeArg.sepBy(TERMS.token(",")), TERMS.token(">")),
         new Map2<Class<?>, List<Type>, ParameterizedType>() {
           @Override public ParameterizedType map(Class<?> raw, List<Type> params) {
             return Types.newParameterizedType(raw, params);
@@ -152,16 +151,15 @@ public final class TypeParser {
     }));
   }
 
-  private static Parser<Type> typeParameter(Parser<Type> anyType) {
+  private static Parser<Type> wildcardType(Parser<Type> boundType) {
     return Parsers.or(
-        TERMS.phrase("?", "extends").next(anyType).map(new Map<Type, Type>() {
+        TERMS.phrase("?", "extends").next(boundType).map(new Map<Type, Type>() {
           @Override public Type map(Type bound) { return Types.subtypeOf(bound); }
         }),
-        TERMS.phrase("?", "super").next(anyType).map(new Map<Type, Type>() {
+        TERMS.phrase("?", "super").next(boundType).map(new Map<Type, Type>() {
           @Override public Type map(Type bound) { return Types.supertypeOf(bound); }
         }),
-        TERMS.token("?").retn(Types.subtypeOf(Object.class)),
-        anyType);
+        TERMS.token("?").retn(Types.subtypeOf(Object.class)));
   }
 
   private static ImmutableMap<String, Class<?>> mapByName(Class<?>... classes) {
