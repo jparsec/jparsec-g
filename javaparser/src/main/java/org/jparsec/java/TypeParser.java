@@ -12,6 +12,7 @@ import org.codehaus.jparsec.Scanners;
 import org.codehaus.jparsec.Terminals;
 import org.codehaus.jparsec.functors.Map;
 import org.codehaus.jparsec.functors.Map2;
+import org.codehaus.jparsec.functors.Unary;
 import org.codehaus.jparsec.pattern.CharPredicate;
 import org.codehaus.jparsec.pattern.Patterns;
 
@@ -82,7 +83,7 @@ public final class TypeParser {
     Parser.Reference<Type> ref = Parser.newReference();
     Parser<Type> type = Parsers.or(
         wildcardType(ref.lazy()), parameterizedType(ref.lazy()), arrayClass(), rawType());
-    ref.set(type.postfix(TERMS.phrase("[", "]").retn(new Map<Type, Type>() {
+    ref.set(type.postfix(TERMS.phrase("[", "]").retn(new Unary<Type>() {
       @Override public Type map(Type componentType) { return Types.newArrayType(componentType); }
     })));
     return TypeToken.of(
@@ -131,7 +132,7 @@ public final class TypeParser {
       }
     });
     return TERMS.token("[") // must be an array internal format from this point on.
-        .next(arrayType.prefix(TERMS.token("[").retn(new Map<Class<?>, Class<?>>() {
+        .next(arrayType.prefix(TERMS.token("[").retn(new Unary<Class<?>>() {
           @Override public Class<?> map(Class<?> componentType) {
             return Types.newArrayType(componentType);
           }
@@ -148,10 +149,10 @@ public final class TypeParser {
 
   private static Parser<Type> wildcardType(Parser<Type> boundType) {
     return Parsers.or(
-        TERMS.phrase("?", "extends").next(boundType).map(new Map<Type, Type>() {
+        TERMS.phrase("?", "extends").next(boundType).map(new Unary<Type>() {
           @Override public Type map(Type bound) { return Types.subtypeOf(bound); }
         }),
-        TERMS.phrase("?", "super").next(boundType).map(new Map<Type, Type>() {
+        TERMS.phrase("?", "super").next(boundType).map(new Unary<Type>() {
           @Override public Type map(Type bound) { return Types.supertypeOf(bound); }
         }),
         TERMS.token("?").retn(Types.subtypeOf(Object.class)));
