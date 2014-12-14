@@ -54,7 +54,7 @@ public final class TypeParser {
       .keywords("extends", "super")
       .build();
 
-  private static final Parser<String> FQN = Terminals.Identifier.PARSER
+  private static final Parser<String> FQN = Terminals.identifier()
       .sepBy1(TERMS.token("."))
       .map(new Map<List<String>, String>() {
         final Joiner joiner = Joiner.on('.');
