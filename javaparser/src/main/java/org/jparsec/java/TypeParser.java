@@ -10,6 +10,7 @@ import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
 import org.codehaus.jparsec.Scanners;
 import org.codehaus.jparsec.Terminals;
+import org.codehaus.jparsec.error.ParserException;
 import org.codehaus.jparsec.functors.Map;
 import org.codehaus.jparsec.functors.Map2;
 import org.codehaus.jparsec.functors.Unary;
@@ -80,7 +81,7 @@ public final class TypeParser {
   }
 
   /** Parses {@code string} to a {@link TypeToken}. */
-  public TypeToken<?> parse(String string) {
+  public TypeToken<?> parse(String string) throws ParserException {
     Parser.Reference<Type> ref = Parser.newReference();
     Parser<Type> type = Parsers.or(
         wildcardType(ref.lazy()), parameterizedType(ref.lazy()), arrayClass(), rawType());
