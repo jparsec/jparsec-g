@@ -11,7 +11,7 @@ To construct TypeToken reflectively:
 
     TypeToken<?> genericType = parser.parse(theClass.getName() + "<?, String>");
 
-[Javadoc](http://jparsec.github.io/jparsec-g/apidocs/)
+## [Javadoc](http://jparsec.github.io/jparsec-g/apidocs/)
 
 ## Maven
 
