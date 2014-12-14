@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.github.jparsec</groupId>
+  <groupId>org.jparsec</groupId>
   <artifactId>jparsec-g-root</artifactId>
   <packaging>pom</packaging>
   <version>1.1-SNAPSHOT</version>
@@ -62,7 +62,7 @@
       <dependency>
         <groupId>org.jparsec</groupId>
         <artifactId>jparsec</artifactId>
-        <version>2.1</version>
+        <version>2.2.1</version>
       </dependency>
 
       <dependency>
@@ -192,7 +192,7 @@
     see https://docs.sonatype.org/display/Repository/How+To+Generate+PGP+Signatures+With+Maven
     -->
     <profile>
-      <id>release-sign-artifacts</id>
+      <id>release</id>
       <activation>
         <property>
           <name>performRelease</name>

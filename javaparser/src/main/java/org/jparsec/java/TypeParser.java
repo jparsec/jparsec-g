@@ -43,14 +43,15 @@ public final class TypeParser {
     }
   };
 
-  private static final Parser<?> WORD = Scanners.pattern(
-      Patterns.isChar(JAVA_IDENTIFIER_START).next(Patterns.isChar(JAVA_IDENTIFIER_PART).many()),
-      "identifier");
+  private static final Parser<?> WORD = Patterns.isChar(JAVA_IDENTIFIER_START)
+      .next(Patterns.isChar(JAVA_IDENTIFIER_PART).many())
+      .toScanner("identifier");
 
-  private static final Terminals TERMS = Terminals.caseSensitive(
-      WORD.source(),
-      new String[] {"<", ">", "&", ",", "[", "]", "?", "@", "."},
-      new String[] {"extends", "super"});
+  private static final Terminals TERMS = Terminals
+      .operators("<", ">", "&", ",", "[", "]", "?", "@", ".")
+      .words(WORD.source())
+      .keywords("extends", "super")
+      .build();
 
   private static final Parser<String> FQN = Terminals.Identifier.PARSER
       .sepBy1(TERMS.token("."))
