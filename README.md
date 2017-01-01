@@ -3,6 +3,8 @@ jparsec-g
 
 Parse Guava TypeToken.
 
+![](https://travis-ci.org/jparsec/jparsec-g.svg?branch=master)
+
 To deserialize TypeToken:
 
     new TypeParser().parse(typeToken.toString())
